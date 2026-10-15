@@ -3,12 +3,16 @@ from django.db import models
 class Category(models.Model):
     name = models.CharField(max_length=100)
 
-    class Meta:
-        verbose_name_plural = 'Categories'
-
     def __str__(self):
         return self.name
 
+    class Meta:
+        db_table = 'task_manager_category'
+        verbose_name = 'Category'
+        verbose_name_plural = 'Categories'
+        constraints = [
+            models.UniqueConstraint(fields=['name'], name='unique_category_name'),
+        ]
 
 class Status(models.TextChoices):
     NEW = 'New', 'New'
@@ -28,6 +32,14 @@ class Task(models.Model):
     def __str__(self):
         return self.title
 
+    class Meta:
+        db_table = 'task_manager_task'
+        ordering = ['-created_at']
+        verbose_name = 'Task'
+        constraints = [
+            models.UniqueConstraint(fields=['title'], name='unique_task_title'),
+        ]
+
 
 class SubTask(models.Model):
     title = models.CharField(max_length=200)
@@ -40,3 +52,10 @@ class SubTask(models.Model):
     def __str__(self):
         return self.title
 
+    class Meta:
+        db_table = 'task_manager_subtask'
+        ordering = ['-created_at']
+        verbose_name = 'SubTask'
+        constraints = [
+            models.UniqueConstraint(fields=['title'], name='unique_subtask_title'),
+        ]
