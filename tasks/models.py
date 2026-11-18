@@ -1,7 +1,24 @@
 from django.db import models
+from django.utils import timezone
+
+
+class CategoryManager(models.Manager):
+    def get_queryset(self):
+        return super().get_queryset().filter(is_deleted=False)
+
 
 class Category(models.Model):
     name = models.CharField(max_length=100)
+    is_deleted = models.BooleanField(default=False)
+    deleted_at = models.DateTimeField(null=True, blank=True)
+
+    objects = CategoryManager()
+    all_objects = models.Manager()
+
+    def delete(self, *args, **kwargs):
+        self.is_deleted = True
+        self.deleted_at = timezone.now()
+        self.save()
 
     def __str__(self):
         return self.name
@@ -14,12 +31,14 @@ class Category(models.Model):
             models.UniqueConstraint(fields=['name'], name='unique_category_name'),
         ]
 
+
 class Status(models.TextChoices):
     NEW = 'New', 'New'
     IN_PROGRESS = 'In progress', 'In progress'
     PENDING = 'Pending', 'Pending'
     BLOCKED = 'Blocked', 'Blocked'
     DONE = 'Done', 'Done'
+
 
 class Task(models.Model):
     title = models.CharField(max_length=200)
@@ -39,6 +58,7 @@ class Task(models.Model):
         constraints = [
             models.UniqueConstraint(fields=['title'], name='unique_task_title'),
         ]
+
 
 
 class SubTask(models.Model):
