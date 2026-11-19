@@ -2,9 +2,11 @@ from django.db.models import Count
 from django.utils import timezone
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import generics, filters
-from rest_framework.decorators import api_view
-from rest_framework.pagination import PageNumberPagination
+from rest_framework.decorators import api_view, action, permission_classes
+# from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly, IsAdminUser
+
 
 from .models import Task, SubTask
 from .serializers import (
@@ -18,6 +20,7 @@ from .serializers import (
 
 class TaskListCreateView(generics.ListCreateAPIView):
     queryset = Task.objects.all()
+    permission_classes = [IsAuthenticated]
 
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     filterset_fields = {
@@ -36,6 +39,7 @@ class TaskListCreateView(generics.ListCreateAPIView):
 
 class TaskRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Task.objects.all()
+    permission_classes = [IsAuthenticated]
 
     def get_serializer_class(self):
         if self.request.method == 'GET':
@@ -44,6 +48,7 @@ class TaskRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
 
 
 @api_view(['GET'])
+@permission_classes([IsAdminUser])
 def task_stats(request):
     total = Task.objects.count()
 
@@ -65,6 +70,7 @@ def task_stats(request):
 
 class SubTaskListCreateView(generics.ListCreateAPIView):
     queryset = SubTask.objects.all()
+    permission_classes = [IsAuthenticated]
     # pagination_class = SubTaskPagination
 
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
@@ -85,3 +91,4 @@ class SubTaskListCreateView(generics.ListCreateAPIView):
 class SubTaskRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
     queryset = SubTask.objects.all()
     serializer_class = SubTaskCreateSerializer
+    permission_classes = [IsAuthenticated]
