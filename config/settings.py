@@ -9,7 +9,7 @@ https://docs.djangoproject.com/en/6.1/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/6.1/ref/settings/
 """
-
+import os
 from pathlib import Path
 
 import environ
@@ -22,6 +22,9 @@ env = environ.Env(
     MYSQL=(bool, False),
 )
 environ.Env.read_env(BASE_DIR / '.env')
+
+LOGS_DIR = BASE_DIR / 'logs'
+os.makedirs(LOGS_DIR, exist_ok=True)
 
 
 # Quick-start development settings - unsuitable for production
@@ -135,5 +138,77 @@ STATIC_URL = 'static/'
 MAILERS = {
     'default': {
         'BACKEND': 'django.core.mail.backends.console.EmailBackend',
+    },
+}
+
+
+REST_FRAMEWORK = {
+    'DEFAULT_PAGINATION_CLASS': 'tasks.pagination.CustomCursorPagination',
+    'PAGE_SIZE': 6,
+}
+
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+
+    'formatters': {
+        'simple': {
+            'format': '[{asctime}] {levelname} {name} - {message}',
+            'style': '{',
+            'datefmt': '%H:%M:%S',
+        },
+    },
+
+    'handlers': {
+        'console': {
+            'level': 'INFO',
+            'class': 'logging.StreamHandler',
+            'formatter': 'simple',
+        },
+        'http_file': {
+            'level': 'INFO',
+            'class': 'logging.handlers.RotatingFileHandler',
+            'formatter': 'simple',
+            'filename': LOGS_DIR / 'http_logs.log',
+            'maxBytes': 1024 * 1024 * 5,
+            'backupCount': 5,
+            'encoding': 'utf8',
+        },
+        'db_file': {
+            'level': 'DEBUG',
+            'class': 'logging.handlers.RotatingFileHandler',
+            'formatter': 'simple',
+            'filename': LOGS_DIR / 'db_logs.log',
+            'maxBytes': 1024 * 1024 * 5,
+            'backupCount': 5,
+            'encoding': 'utf8',
+        },
+    },
+
+    'loggers': {
+        'django': {
+            'handlers': ['console'],
+            'level': 'INFO',
+            'propagate': False,
+        },
+
+        'django.server': {
+            'handlers': ['console', 'http_file'],
+            'level': 'INFO',
+            'propagate': False,
+        },
+
+        'django.request': {
+            'handlers': ['http_file'],
+            'level': 'INFO',
+            'propagate': False,
+        },
+
+        'django.db.backends': {
+            'handlers': ['db_file'],
+            'level': 'DEBUG',
+            'propagate': False,
+        },
     },
 }

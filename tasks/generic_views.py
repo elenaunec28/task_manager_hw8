@@ -59,13 +59,13 @@ def task_stats(request):
     })
 
 
-class SubTaskPagination(PageNumberPagination):
-    page_size = 5
+# class SubTaskPagination(PageNumberPagination):
+#     page_size = 5
 
 
 class SubTaskListCreateView(generics.ListCreateAPIView):
     queryset = SubTask.objects.all()
-    pagination_class = SubTaskPagination
+    # pagination_class = SubTaskPagination
 
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     filterset_fields = {
