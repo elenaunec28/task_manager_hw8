@@ -14,7 +14,8 @@ from .generic_views import (
     task_stats,
     TaskRetrieveUpdateDestroyView,
     SubTaskListCreateView,
-    SubTaskRetrieveUpdateDestroyView
+    SubTaskRetrieveUpdateDestroyView,
+    MyTaskListView,
 )
 
 from .viewset_views import CategoryViewSet
@@ -44,5 +45,6 @@ urlpatterns = [
     path('subtasks/<int:pk>/', SubTaskRetrieveUpdateDestroyView.as_view() ,name='subtasks_detail'),
 
     path('', include(router.urls)),
+    path('tasks/my/', MyTaskListView.as_view(), name='my-tasks'),
 ]
 
