@@ -243,5 +243,27 @@ LOGGING = {
             'level': 'DEBUG',
             'propagate': False,
         },
+
+        'tasks': {
+            'handlers': ['console'],
+            'level': 'INFO',
+            'propagate': False,
+        },
+    },
+}
+
+
+MAILERS = {
+    'default': {
+        'BACKEND': 'django.core.mail.backends.console.EmailBackend',
+    },
+}
+
+DEFAULT_FROM_EMAIL = 'noreply@taskmanager.local'
+
+
+TASKS = {
+    'default': {
+        'BACKEND': 'django.tasks.backends.immediate.ImmediateBackend',
     },
 }
