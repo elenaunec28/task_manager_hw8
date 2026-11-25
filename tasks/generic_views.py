@@ -8,6 +8,7 @@ from rest_framework.decorators import api_view, action, permission_classes
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly, IsAdminUser
 
+from .pagination import SubTaskPagination
 from .permissions import IsOwnerOrReadOnly
 
 from .models import Task, SubTask
@@ -40,6 +41,15 @@ class TaskListCreateView(generics.ListCreateAPIView):
 
     def perform_create(self, serializer):
         serializer.save(owner=self.request.user)
+
+    def get_queryset(self):
+        queryset = Task.objects.all()
+
+        day = self.request.query_params.get('day')
+        if day:
+            queryset = queryset.filter(deadline__iso_week_day=int(day))
+
+        return queryset
 
 
 class TaskRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
@@ -74,18 +84,29 @@ def task_stats(request):
 
 
 class SubTaskListCreateView(generics.ListCreateAPIView):
-    queryset = SubTask.objects.all()
     permission_classes = [IsAuthenticated]
-    # pagination_class = SubTaskPagination
+    pagination_class = SubTaskPagination
 
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     filterset_fields = {
-        'status': ['exact'],
         'deadline': ['exact', 'gte', 'lte'],
     }
     search_fields = ['title', 'description']
     ordering_fields = ['created_at']
     ordering = ['-created_at']
+
+    def get_queryset(self):
+        queryset = SubTask.objects.all().order_by('-created_at')
+
+        task_title = self.request.query_params.get('task_title')
+        status_param = self.request.query_params.get('status')
+
+        if task_title:
+            queryset = queryset.filter(task__title__icontains=task_title)
+        if status_param:
+            queryset = queryset.filter(status__iexact=status_param)
+
+        return queryset
 
     def get_serializer_class(self):
         if self.request.method == 'POST':
